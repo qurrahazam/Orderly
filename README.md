@@ -1,4 +1,3 @@
-```markdown
 # E-Commerce Platform
 
 A full-stack e-commerce application built with Next.js, Prisma, and PostgreSQL.
