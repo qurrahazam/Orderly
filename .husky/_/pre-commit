@@ -1,0 +1,9 @@
+#!/bin/sh
+
+CHANGED_FILES=$(git diff --cached --name-only)
+
+if echo "$CHANGED_FILES" | grep -q "^prisma/migrations/"; then
+  echo "❌ Direct migration commits are not allowed."
+  echo "Only CI can generate migrations."
+  exit 1
+fi
