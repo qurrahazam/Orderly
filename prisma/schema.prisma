@@ -16,9 +16,11 @@ model User {
   id        String   @id @default(uuid())
   email     String   @unique
   name      String?
+  phone     String?  // Add this line
   orders    Order[]
   cart      Cart?
   createdAt DateTime @default(now())
+  @@index([email])
 }
 
 //////////////////////////////
