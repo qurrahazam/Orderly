@@ -17,9 +17,7 @@ model User {
   email     String   @unique
   name      String?
   phone     String?  // Add this line
-  address   String?
   orders    Order[]
-  street    String?
   cart      Cart?
   createdAt DateTime @default(now())
   @@index([email])
