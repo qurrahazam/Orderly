@@ -84,5 +84,4 @@ jobs:
 
           Please review the migration SQL before merging.
           
-          Migration: \`${{ steps.migration.outputs.migration_name }}\`" \
-            --label "prisma,migration,automated"
+          Migration: \`${{ steps.migration.outputs.migration_name }}\`"
