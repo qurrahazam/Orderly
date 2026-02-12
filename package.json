@@ -11,6 +11,7 @@
     "start": "next start",
     "lint": "eslint",
     "seed": "ts-node prisma/seed.ts",
+    "prepare": "husky",
     "migrate:local": "node scripts/local-migrate.js"
   },
   "dependencies": {
