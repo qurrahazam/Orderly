@@ -43,6 +43,7 @@ model TestModel {
   id   Int @id @default(autoincrement())
   name String?   // ← add this
   email String?
+  orange String?
 }
 
 //////////////////////////////
