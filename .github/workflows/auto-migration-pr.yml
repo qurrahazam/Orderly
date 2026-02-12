@@ -22,6 +22,7 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.base.ref }}
           fetch-depth: 0
+          token: ${{ secrets.PAT_TOKEN }}
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -62,17 +63,26 @@ jobs:
 
       - name: Create migration PR
         if: steps.migration.outputs.created == 'true'
-        uses: peter-evans/create-pull-request@v6
-        with:
-          branch: ci/prisma-migration-${{ steps.migration.outputs.migration_name }}
-          delete-branch: true
-          base: ${{ github.event.pull_request.base.ref }}
-          commit-message: "chore: auto prisma migration ${{ steps.migration.outputs.migration_name }}"
-          title: "Auto-generated Prisma Migration"
-          body: |
-            This PR was automatically created after schema changes were merged in PR #${{ github.event.pull_request.number }}.
+        env:
+          GH_TOKEN: ${{ secrets.PAT_TOKEN }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          
+          BRANCH_NAME="ci/prisma-migration-${{ steps.migration.outputs.migration_name }}"
+          
+          git checkout -b "$BRANCH_NAME"
+          git add prisma/migrations
+          git commit -m "chore: auto prisma migration ${{ steps.migration.outputs.migration_name }}"
+          git push origin "$BRANCH_NAME"
+          
+          gh pr create \
+            --base "${{ github.event.pull_request.base.ref }}" \
+            --head "$BRANCH_NAME" \
+            --title "Auto-generated Prisma Migration" \
+            --body "This PR was automatically created after schema changes were merged in PR #${{ github.event.pull_request.number }}.
 
-            Please review the migration SQL before merging.
-            
-            Migration: `${{ steps.migration.outputs.migration_name }}`
-          labels: prisma,migration,automated
+          Please review the migration SQL before merging.
+          
+          Migration: \`${{ steps.migration.outputs.migration_name }}\`" \
+            --label "prisma,migration,automated"
