@@ -49,9 +49,14 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Generate migration (create only)
+      - name: Generate migration using diff
         run: |
-          npx prisma migrate dev --create-only --name auto_ci_migration
+          mkdir -p prisma/migrations/auto_ci_migration
+          npx prisma migrate diff \
+            --from-empty \
+            --to-schema-datamodel prisma/schema.prisma \
+            --script > prisma/migrations/auto_ci_migration/migration.sql
+
 
       - name: Check if migration was created
         id: migration
