@@ -44,6 +44,7 @@ model TestModel {
   name String?   // ← add this
   email String?
   orange String?
+  banana String?
 }
 
 //////////////////////////////
