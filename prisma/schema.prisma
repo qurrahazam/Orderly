@@ -39,11 +39,6 @@ model Product {
   cartItems        CartItem[]
 }
 
-model TestModel {
-  id   Int @id @default(autoincrement())
-  name String?   // ← add this
-}
-
 //////////////////////////////
 // Categories
 //////////////////////////////
