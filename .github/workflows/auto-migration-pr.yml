@@ -13,33 +13,15 @@ permissions:
 
 jobs:
   prisma-migration:
-    # run only if PR was merged
     if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
-
-    services:
-      postgres:
-        image: postgres:15
-        env:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: testdb
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd="pg_isready -U postgres"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=5
-
-    env:
-      DATABASE_URL: postgres://postgres:postgres@localhost:5432/testdb
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
           ref: ${{ github.event.pull_request.base.ref }}
+          fetch-depth: 0
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -49,40 +31,48 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Generate migration using diff
+      - name: Get schema before merge
         run: |
-          mkdir -p prisma/migrations/auto_ci_migration
+          git show ${{ github.event.pull_request.base.sha }}:prisma/schema.prisma > schema.old.prisma || echo "-- No previous schema" > schema.old.prisma
+
+      - name: Generate migration diff
+        run: |
           npx prisma migrate diff \
-            --from-empty \
+            --from-schema-datamodel schema.old.prisma \
             --to-schema-datamodel prisma/schema.prisma \
-            --script > prisma/migrations/auto_ci_migration/migration.sql
+            --script > migration.sql
 
-
-      - name: Check if migration was created
+      - name: Create migration if needed
         id: migration
         run: |
-          if git diff --quiet prisma/migrations; then
-            echo "created=false" >> $GITHUB_OUTPUT
-          else
+          if [ -s migration.sql ] && grep -qv '^--' migration.sql && grep -qv '^[[:space:]]*$' migration.sql; then
+            TIMESTAMP=$(date +%Y%m%d%H%M%S)
+            MIGRATION_DIR="prisma/migrations/${TIMESTAMP}_auto_migration"
+            mkdir -p "$MIGRATION_DIR"
+            mv migration.sql "$MIGRATION_DIR/migration.sql"
             echo "created=true" >> $GITHUB_OUTPUT
+            echo "migration_name=${TIMESTAMP}_auto_migration" >> $GITHUB_OUTPUT
+          else
+            echo "created=false" >> $GITHUB_OUTPUT
           fi
 
       - name: Stop if no migration
         if: steps.migration.outputs.created == 'false'
         run: echo "No migration needed."
 
-      # prevent multiple bot PRs
       - name: Create migration PR
         if: steps.migration.outputs.created == 'true'
         uses: peter-evans/create-pull-request@v6
         with:
-          branch: ci/prisma-migration
+          branch: ci/prisma-migration-${{ steps.migration.outputs.migration_name }}
           delete-branch: true
           base: ${{ github.event.pull_request.base.ref }}
-          commit-message: "chore: auto prisma migration"
+          commit-message: "chore: auto prisma migration ${{ steps.migration.outputs.migration_name }}"
           title: "Auto-generated Prisma Migration"
           body: |
-            This PR was created automatically after schema changes.
+            This PR was automatically created after schema changes were merged in PR #${{ github.event.pull_request.number }}.
 
             Please review the migration SQL before merging.
-          labels: prisma,migration,ci
+            
+            Migration: `${{ steps.migration.outputs.migration_name }}`
+          labels: prisma,migration,automated
