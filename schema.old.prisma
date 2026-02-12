@@ -1,0 +1,132 @@
+// Datasource: PostgreSQL
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Generator for Prisma Client
+generator client {
+  provider = "prisma-client-js"
+}
+
+//////////////////////////////
+// Users
+//////////////////////////////
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  name      String?
+  phone     String?  // Add this line
+  orders    Order[]
+  cart      Cart?
+  createdAt DateTime @default(now())
+  @@index([email])
+}
+
+//////////////////////////////
+// Products
+//////////////////////////////
+model Product {
+  id               String            @id @default(uuid())
+  name             String
+  description      String?
+  price            Int               // Stored in cents
+  inventory        Inventory?
+  inventoryChanges InventoryChange[]
+  categories       ProductCategory[]
+  createdAt        DateTime          @default(now())
+  orderItems       OrderItem[]
+  cartItems        CartItem[]
+}
+
+model TestModel {
+  id   Int @id @default(autoincrement())
+  name String?   // ← add this
+  email String?
+  orange String?
+}
+
+//////////////////////////////
+// Categories
+//////////////////////////////
+model Category {
+  id       String             @id @default(uuid())
+  name     String             @unique
+  products ProductCategory[]
+}
+
+//////////////////////////////
+// Join table for Product ↔ Category
+//////////////////////////////
+model ProductCategory {
+  product   Product @relation(fields: [productId], references: [id])
+  productId String
+  category  Category @relation(fields: [categoryId], references: [id])
+  categoryId String
+
+  @@id([productId, categoryId])
+}
+
+//////////////////////////////
+// Cart & CartItem
+//////////////////////////////
+model Cart {
+  id        String      @id @default(uuid())
+  user      User        @relation(fields: [userId], references: [id])
+  userId    String      @unique
+  items     CartItem[]
+  createdAt DateTime    @default(now())
+}
+
+model CartItem {
+  id        String   @id @default(uuid())
+  cart      Cart     @relation(fields: [cartId], references: [id])
+  cartId    String
+  product   Product  @relation(fields: [productId], references: [id])
+  productId String
+  quantity  Int      @default(1)
+}
+
+//////////////////////////////
+// Orders & OrderItems (Snapshots)
+//////////////////////////////
+model Order {
+  id        String      @id @default(uuid())
+  user      User        @relation(fields: [userId], references: [id])
+  userId    String
+  items     OrderItem[]
+  total     Int
+  status    String      @default("pending")
+  createdAt DateTime    @default(now())
+}
+
+model OrderItem {
+  id          String   @id @default(uuid())
+  order       Order    @relation(fields: [orderId], references: [id])
+  orderId     String
+  product     Product  @relation(fields: [productId], references: [id])
+  productId   String
+
+  // SNAPSHOT fields
+  productName String
+  price       Int
+  quantity    Int
+}
+
+//////////////////////////////
+// Inventory & Audit
+//////////////////////////////
+model Inventory {
+  product   Product @relation(fields: [productId], references: [id])
+  productId String   @id
+  quantity  Int
+}
+
+model InventoryChange {
+  id        String   @id @default(uuid())
+  product   Product  @relation(fields: [productId], references: [id])
+  productId String
+  delta     Int
+  reason    String
+  createdAt DateTime  @default(now())
+}
