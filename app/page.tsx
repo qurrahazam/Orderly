@@ -8,11 +8,20 @@ type Product = {
 };
 
 async function getProducts(): Promise<Product[]> {
-  const res = await fetch("http://localhost:3000/api/products", {
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
+  if (!baseUrl) throw new Error("NEXT_PUBLIC_BASE_URL is not set");
+
+  const res = await fetch(`${baseUrl}/api/products`, {
     next: { revalidate: 0 },
   });
+
+  if (!res.ok) {
+    throw new Error(`Failed to fetch products: ${res.statusText}`);
+  }
+
   return (await res.json()) as Product[];
 }
+
 
 export default async function HomePage() {
   const products = await getProducts();
