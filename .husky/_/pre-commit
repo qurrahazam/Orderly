@@ -1,2 +1,8 @@
-#!/usr/bin/env sh
-. "$(dirname "$0")/h"
+#!/bin/sh
+. "$(dirname "$0")/_/husky.sh"
+
+# Block commits touching Prisma migrations
+if git diff --cached --name-only | grep -q "^prisma/migrations/"; then
+  echo "❌ ERROR: Prisma migrations cannot be committed."
+  exit 1
+fi
