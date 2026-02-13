@@ -12,7 +12,8 @@
     "lint": "eslint",
     "seed": "ts-node prisma/seed.ts",
     "prepare": "husky",
-    "migrate:local": "node scripts/local-migrate.js"
+    "migrate:local": "node scripts/local-migrate.js",
+    "postinstall": "prisma generate"
   },
   "dependencies": {
     "@prisma/client": "^5.22.0",
