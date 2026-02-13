@@ -72,10 +72,6 @@ export default async function HomePage() {
                 <h2 className="text-xl font-bold text-gray-900 mb-2 line-clamp-1">
                   {product.name}
                 </h2>
-                
-                <p className="text-gray-600 text-sm mb-4 line-clamp-2 min-h-[2.5rem]">
-                  {product.description || "No description available"}
-                </p>
 
                 {/* Categories */}
                 {product.categories.length > 0 && (
