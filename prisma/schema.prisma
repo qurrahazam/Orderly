@@ -27,6 +27,7 @@ model Test {
   id        String   @id @default(uuid())
   email     String   @unique
   name      String?
+  orange    String?
 }
 
 //////////////////////////////
