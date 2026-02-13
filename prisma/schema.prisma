@@ -28,6 +28,7 @@ model Test {
   email     String   @unique
   name      String?
   orange    String?
+  apple     String?
 }
 
 //////////////////////////////
