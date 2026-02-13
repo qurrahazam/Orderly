@@ -1,6 +1,9 @@
+#!/bin/sh
 
-# Block commits touching Prisma migrations
-if git diff --cached --name-only | grep -q "^prisma/migrations/"; then
-  echo "❌ ERROR: Prisma migrations cannot be committed."
+CHANGED_FILES=$(git diff --cached --name-only)
+
+if echo "$CHANGED_FILES" | grep -q "^prisma/migrations/"; then
+  echo "❌ Direct migration commits are not allowed."
+  echo "Only CI can generate migrations."
   exit 1
 fi
