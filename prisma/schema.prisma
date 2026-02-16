@@ -29,6 +29,7 @@ model Test {
   name      String?
   orange    String?
   apple     String?
+  banana    String?
 }
 
 //////////////////////////////
