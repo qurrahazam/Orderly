@@ -1,4 +1,4 @@
-name: Auto Prisma Migration PR
+name: Auto Prisma Migration
 
 on:
   pull_request:
@@ -9,7 +9,6 @@ on:
 
 permissions:
   contents: write
-  pull-requests: write
 
 jobs:
   prisma-migration:
@@ -43,45 +42,23 @@ jobs:
             --to-schema-datamodel prisma/schema.prisma \
             --script > migration.sql
 
-      - name: Create migration if needed
-        id: migration
+      - name: Create and commit migration
         run: |
           if [ -s migration.sql ] && grep -qv '^--' migration.sql && grep -qv '^[[:space:]]*$' migration.sql; then
             TIMESTAMP=$(date +%Y%m%d%H%M%S)
             MIGRATION_DIR="prisma/migrations/${TIMESTAMP}_auto_migration"
             mkdir -p "$MIGRATION_DIR"
             mv migration.sql "$MIGRATION_DIR/migration.sql"
-            echo "created=true" >> $GITHUB_OUTPUT
-            echo "migration_name=${TIMESTAMP}_auto_migration" >> $GITHUB_OUTPUT
+            
+            # Configure git with PR author's info
+            git config user.name "${{ github.event.pull_request.user.login }}"
+            git config user.email "${{ github.event.pull_request.user.login }}@users.noreply.github.com"
+            
+            git add prisma/migrations
+            git commit -m "chore: auto prisma migration ${TIMESTAMP}_auto_migration"
+            git push origin ${{ github.event.pull_request.base.ref }}
+            
+            echo "✅ Migration created and committed: ${TIMESTAMP}_auto_migration"
           else
-            echo "created=false" >> $GITHUB_OUTPUT
+            echo "ℹ️ No migration needed."
           fi
-
-      - name: Stop if no migration
-        if: steps.migration.outputs.created == 'false'
-        run: echo "No migration needed."
-
-      - name: Create migration PR
-        if: steps.migration.outputs.created == 'true'
-        env:
-          GH_TOKEN: ${{ secrets.PAT_TOKEN }}
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          
-          BRANCH_NAME="ci/prisma-migration-${{ steps.migration.outputs.migration_name }}"
-          
-          git checkout -b "$BRANCH_NAME"
-          git add prisma/migrations
-          git commit -m "chore: auto prisma migration ${{ steps.migration.outputs.migration_name }}"
-          git push origin "$BRANCH_NAME"
-          
-          gh pr create \
-            --base "${{ github.event.pull_request.base.ref }}" \
-            --head "$BRANCH_NAME" \
-            --title "Auto-generated Prisma Migration" \
-            --body "This PR was automatically created after schema changes were merged in PR #${{ github.event.pull_request.number }}.
-
-          Please review the migration SQL before merging.
-          
-          Migration: \`${{ steps.migration.outputs.migration_name }}\`"
