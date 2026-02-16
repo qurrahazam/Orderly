@@ -30,6 +30,7 @@ model Test {
   orange    String?
   apple     String?
   banana    String?
+  pineapple String?
 }
 
 //////////////////////////////
