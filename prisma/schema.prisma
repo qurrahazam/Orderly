@@ -32,6 +32,12 @@ model Test {
   banana    String?
   pineapple String?
   test3     String?
+  test4     String?
+  test5     String?
+  test6     String?
+  test7     String?
+  test8     String?
+  test9     String?
 }
 
 //////////////////////////////

@@ -18,15 +18,14 @@
     "lint-staged": "lint-staged"
   },
   "lint-staged": {
-  "*.{js,jsx,ts,tsx}": [
-    "eslint --fix"
-  ],
-  "!prisma/migrations/**": []
+    "*.{js,jsx,ts,tsx}": [
+      "eslint --fix"
+    ],
+    "!prisma/migrations/**": []
   },
   "dependencies": {
-    "@prisma/client": "^5.22.0",
+    "@prisma/client": "6.13.0",
     "next": "16.1.6",
-    "prisma": "^5.22.0",
     "react": "19.2.3",
     "react-dom": "19.2.3"
   },
@@ -35,12 +34,13 @@
     "@types/node": "^20.19.31",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "dotenv": "^17.3.1",
     "eslint": "^9",
     "eslint-config-next": "16.1.6",
     "husky": "^9.1.7",
     "lint-staged": "^16.2.7",
     "prettier": "^3.8.1",
-    "prisma": "5.22.0",
+    "prisma": "6.13.0",
     "tailwindcss": "^4",
     "ts-node": "^10.9.2",
     "tsx": "^4.21.0",
