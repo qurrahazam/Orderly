@@ -3,7 +3,7 @@ name: Auto Prisma Migration
 on:
   pull_request:
     types: [closed]
-    branches: [dev]
+    branches: [main dev]
     paths:
       - "prisma/schema.prisma"
 
