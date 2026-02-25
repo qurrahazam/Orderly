@@ -38,9 +38,6 @@ model Test {
   test7     String?
   test8     String?
   test9     String?
-  test10    String?
-  test11    String?
-  test12    String?
 }
 
 //////////////////////////////
